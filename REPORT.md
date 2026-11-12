@@ -327,7 +327,7 @@ Bottom-up [до](report/01-diagnosis/screenshots/2-click-bottom-up.png) і
 
 ### Виправлення 2. Клік перемальовує одну картку замість 2000 (проблема 3)
 
-**Коміт:** _буде додано після коміту_
+**Коміт:** `831f862` "Виправлення 2: memo для TutorCard, стабільні колбеки і useMemo для списку"
 
 **Що змінено.**
 - [TutorCard.jsx](src/components/TutorCard.jsx) обгорнута в `memo`, тож картка рендериться лише тоді, коли змінились
@@ -369,6 +369,52 @@ Bottom-up [до](report/01-diagnosis/screenshots/2-click-bottom-up.png) і
 Profiler [до](report/01-diagnosis/screenshots/3-profiler-flamegraph.png) і
 [після](report/03-fix-memo/screenshots/profiler-after-ranked.png),
 ["Why did this render" після](report/03-fix-memo/screenshots/profiler-after-why-rendered.png).
+
+### Виправлення 3. useBioClamp без обробника scroll і без примусових перерахунків (проблема 1)
+
+**Коміт:** _буде додано після коміту_
+
+**Що змінено** ([src/hooks/useBioClamp.js](src/hooks/useBioClamp.js)):
+- щоб дізнатися, чи обрізаний текст, хук більше не прибирає й не повертає клас: якщо текст обрізаний,
+  `scrollHeight` більший за `clientHeight`, і цього досить;
+- спочатку читаються розміри всіх потрібних карток, і тільки потім ставляться позначки `data-has-more`,
+  тож браузер рахує layout один раз, а не по два рази на картку;
+- обробника `scroll` більше немає. `IntersectionObserver` сам повідомляє, коли картка наближається до екрана,
+  причому заздалегідь, за висоту екрана (`rootMargin: '100% 0px'`), і міряються тільки ці картки;
+- картки, видні одразу після рендеру, міряються ще до першого кадру, тож "Читати далі" не з'являється із запізненням;
+- для тестів у [src/setupTests.js](src/setupTests.js) додано заглушку `IntersectionObserver`, бо в jsdom його немає.
+
+Руками перевірила: "Читати далі" є на тих самих картках, що й раніше, і на початку списку, і далеко внизу,
+і лишається після відкриття та закриття "Детальніше". `npm test` проходить.
+
+**S4 Прокрутка** (трейси `report/04-fix-bioclamp/traces/s4-scroll-run*.json.gz`; "до" це базова лінія, бо
+виправлення 1 і 2 прокрутку не зачіпали):
+
+| Метрика | До (медіана) | Після: 1 / 2 / 3 | Після (медіана) | Зміна |
+|---|---|---|---|---|
+| час 20 прокручувань (без гальм ~2 с) | 32 045 мс | 12 982 / 16 984 / 20 715 | **16 984 мс** | **−47%** |
+| Rendering (Summary) | 20 832 мс | 3443 / 5788 / 7018 | **5788 мс** | **−72%** |
+| Painting (Summary) | 10 627 мс | 5888 / 9851 / 11 775 | 9851 мс | без суттєвих змін |
+| insight Forced reflow | 14,43 с | 49 мс | | |
+
+Що видно в трейсах між позначками `scroll-start` і `scroll-end`: до виправлення браузер рахував Layout
+212-267 разів (11-15 с), і кожен раз це був forced reflow з JavaScript; після виправлення Layout 6-10 разів
+(0,3-0,6 с), а forced reflow 1-2, і викликає їх `scrollBy` з тестової команди в консолі, а не застосунок
+(тому в insight він підписаний `(anonymous) @ (unknown)`). Сам код хука в CPU-профілі займає кілька мілісекунд,
+`IntersectionObserver` (обчислення перетинів для 2000 карток) близько 0,5 с.
+
+Чому прокрутка все одно не 2 с: решту часу тепер займають Commit і Pre-paint (зелений Painting і частина
+Rendering): браузер малює й компонує сторінку з 2000 карток. Це вже розмір DOM, а не наш хук. У запусках 1 і 3
+ще трапилось одне велике збирання сміття (Major GC, ~2,5 с), яке DevTools записує в Scripting, тому Scripting
+скаче (5169 / 172 / 2716 мс) і для порівняння я його не використовую.
+
+Скріншоти: [запуск 1](report/04-fix-bioclamp/screenshots/s4-scroll-run1.png),
+[Forced reflow після](report/04-fix-bioclamp/screenshots/s4-scroll-run1-forced-reflow.png),
+[запуск 2](report/04-fix-bioclamp/screenshots/s4-scroll-run2.png),
+[запуск 3](report/04-fix-bioclamp/screenshots/s4-scroll-run3.png),
+[перші 10 с прокрутки після](report/04-fix-bioclamp/screenshots/s4-scroll-after-first-10s.png);
+до: [трейс прокрутки](report/00-baseline/screenshots/s4-scroll-run2-trace.png),
+[Forced reflow 14,43 с](report/01-diagnosis/screenshots/1-scroll-forced-reflow-insight.png).
 
 ## 6. Перевірено й свідомо не змінено
 

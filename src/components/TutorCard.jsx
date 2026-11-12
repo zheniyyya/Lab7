@@ -11,7 +11,13 @@ function TutorCard({ tutor, isFavorite, isSelected, onSelect, onToggleFavorite }
   return (
     <article className={'tutor-card' + (isSelected ? ' tutor-card--selected' : '')}>
       <div className="tutor-card__media">
-        <img className="tutor-card__photo" src={tutor.photo} alt={tutor.name} />
+        <img
+          className="tutor-card__photo"
+          src={tutor.photo}
+          alt={tutor.name}
+          width="900"
+          height="900"
+        />
         <button
           type="button"
           className={'tutor-card__fav' + (isFavorite ? ' is-active' : '')}

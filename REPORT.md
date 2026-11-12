@@ -277,7 +277,7 @@
 
 ### Виправлення 1. Бал для сортування рахується один раз на репетитора (проблема 2)
 
-**Коміт:** _буде додано після коміту_
+**Коміт:** `e44d0a5` "Виправлення 1: бал для сортування рахується один раз на репетитора"
 
 **Що змінено.** У [src/utils/catalog.js](src/utils/catalog.js) компаратор `recommended` більше не викликає `tutorScore`
 у кожному порівнянні. Бал рахується один раз для кожного репетитора й запам'ятовується у `WeakMap`
@@ -324,6 +324,51 @@
 Bottom-up [до](report/01-diagnosis/screenshots/2-click-bottom-up.png) і
 [після](report/02-fix-sort/screenshots/click-favorite-after-bottom-up.png),
 [пошук, запуски 1-3](report/02-fix-sort/screenshots/).
+
+### Виправлення 2. Клік перемальовує одну картку замість 2000 (проблема 3)
+
+**Коміт:** _буде додано після коміту_
+
+**Що змінено.**
+- [TutorCard.jsx](src/components/TutorCard.jsx) обгорнута в `memo`, тож картка рендериться лише тоді, коли змінились
+  її пропси. Картка сама передає свій `tutor.id` у колбек, тому `TutorList` більше не створює для кожної картки
+  нові функції `() => onSelect(tutor.id)`.
+- У [App.jsx](src/App.jsx) `toggleFavorite` у `useCallback`, а замість `(id) => setSelectedId(id)` передається сам
+  `setSelectedId`. Колбеки між рендерами ті самі, і `memo` спрацьовує.
+- Список у `useMemo` з залежностями `[query, filters, sortBy]`: фільтрація й сортування більше не повторюються
+  від кліку ♡ чи відкриття картки.
+- Довелося змінити ще одну річ, щоб не зламати "Читати далі". Хук `useBioClamp` ставив картці клас `has-more`
+  повз React, а React при виборі картки переписує її `className`, і клас зникав. Раніше цього не було видно, бо
+  хук перезапускався після кожного рендеру й ставив клас знову. Тепер, коли список між кліками той самий, хук
+  не перезапускається, тому позначка стала атрибутом `data-has-more`, якого React не чіпає
+  ([useBioClamp.js](src/hooks/useBioClamp.js), один селектор в [index.css](src/styles/index.css)).
+
+Функціональність я перевірила руками: ♡ і лічильник у шапці, "Детальніше" і закриття, "Читати далі" лишається
+на картці після відкриття й закриття панелі, пошук, фільтр "Онлайн", сортування. `npm test` проходить.
+
+**S3 Картка** (трейси `report/03-fix-memo/traces/s3-card-run*.json.gz`; "до" це результат після виправлення 1):
+
+| Взаємодія | До (медіана) | Після: 1 / 2 / 3 | Після (медіана) | Зміна |
+|---|---|---|---|---|
+| клік ♡ | 1440 мс | 207 / 205 / 223 | **207 мс** | **−86%** |
+| клік "Детальніше" | 1910 мс | 244 / 234 / 236 | **236 мс** | **−88%** |
+| закриття × | 1450 мс | 231 / 267 / 235 | **235 мс** | **−84%** |
+
+Від базової лінії клік ♡ став швидшим у 13 разів (2730 → 207 мс).
+
+**React Profiler, той самий клік ♡** (dev-режим): Render **844,8 мс → 15,5 мс**. У Ranked тепер лише `TutorList`
+(9,6 мс), `Filters` і кілька маленьких компонентів, а для `TutorCard` Profiler пише "Memo" і
+"Why did this render? Props changed: (isFavorite)", тобто перемальовано тільки картку, на якій клікнули.
+
+**Один клік ♡, трейс** (`report/03-fix-memo/traces/click-favorite.json.gz`): у треку Interactions замість широкої
+смуги лишилась коротка позначка; Scripting за весь запис 840 → 239 мс; у Bottom-up більше немає ні `formatPrice`,
+ні `TutorCard` серед верхніх рядків, бо 1999 карток просто не рендеряться.
+
+Скріншоти: трейс [після](report/03-fix-memo/screenshots/click-favorite-after-trace.png),
+[Bottom-up після](report/03-fix-memo/screenshots/click-favorite-after-bottom-up.png),
+Profiler [до](report/01-diagnosis/screenshots/3-profiler-flamegraph.png) і
+[після](report/03-fix-memo/screenshots/profiler-after-ranked.png),
+["Why did this render" після](report/03-fix-memo/screenshots/profiler-after-why-rendered.png).
 
 ## 6. Перевірено й свідомо не змінено
 

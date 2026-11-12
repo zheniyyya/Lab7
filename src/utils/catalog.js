@@ -9,8 +9,6 @@ export const SORT_OPTIONS = [
   { value: 'name', label: 'За іменем' },
 ];
 
-// Бал залежить лише від даних репетитора, а вони не змінюються, тож рахуємо його один раз на репетитора.
-// WeakMap не тримає об'єкти в пам'яті, якщо вони стануть непотрібні.
 const scoreCache = new WeakMap();
 
 function cachedScore(tutor) {

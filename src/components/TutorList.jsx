@@ -21,8 +21,8 @@ export default function TutorList({
           tutor={tutor}
           isFavorite={favorites.includes(tutor.id)}
           isSelected={tutor.id === selectedId}
-          onSelect={() => onSelect(tutor.id)}
-          onToggleFavorite={() => onToggleFavorite(tutor.id)}
+          onSelect={onSelect}
+          onToggleFavorite={onToggleFavorite}
         />
       ))}
     </div>

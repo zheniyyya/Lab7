@@ -15,7 +15,7 @@ export function useBioClamp(containerRef, deps) {
         bio.classList.remove('is-clamped');
         const fullHeight = bio.offsetHeight;
         bio.classList.add('is-clamped');
-        bio.closest('.tutor-card').classList.toggle('has-more', fullHeight > bio.offsetHeight + 1);
+        bio.closest('.tutor-card').toggleAttribute('data-has-more', fullHeight > bio.offsetHeight + 1);
       });
     };
 

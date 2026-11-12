@@ -1,8 +1,10 @@
+import { memo } from 'react';
 import RatingStars from './RatingStars';
 import { averageRating } from '../utils/rating';
 import { formatPrice, pluralize, FORMAT_LABELS } from '../utils/format';
 
-export default function TutorCard({ tutor, isFavorite, isSelected, onSelect, onToggleFavorite }) {
+function TutorCard({ tutor, isFavorite, isSelected, onSelect, onToggleFavorite }) {
+  const select = () => onSelect(tutor.id);
   const rating = averageRating(tutor.reviews);
   const reviewsCount = tutor.reviews.length;
 
@@ -15,7 +17,7 @@ export default function TutorCard({ tutor, isFavorite, isSelected, onSelect, onT
           className={'tutor-card__fav' + (isFavorite ? ' is-active' : '')}
           aria-pressed={isFavorite}
           aria-label={isFavorite ? 'Прибрати з обраних' : 'Додати в обрані'}
-          onClick={onToggleFavorite}
+          onClick={() => onToggleFavorite(tutor.id)}
         >
           {isFavorite ? '♥' : '♡'}
         </button>
@@ -48,7 +50,7 @@ export default function TutorCard({ tutor, isFavorite, isSelected, onSelect, onT
           </span>
         </div>
         <p className="tutor-card__bio is-clamped">{tutor.bio}</p>
-        <button type="button" className="link-button tutor-card__more" onClick={onSelect}>
+        <button type="button" className="link-button tutor-card__more" onClick={select}>
           Читати далі
         </button>
         <div className="tutor-card__footer">
@@ -56,7 +58,7 @@ export default function TutorCard({ tutor, isFavorite, isSelected, onSelect, onT
             {formatPrice(tutor.pricePerHour)}
             <small> / год</small>
           </span>
-          <button type="button" className="button button--ghost" onClick={onSelect}>
+          <button type="button" className="button button--ghost" onClick={select}>
             Детальніше
           </button>
         </div>
@@ -64,3 +66,5 @@ export default function TutorCard({ tutor, isFavorite, isSelected, onSelect, onT
     </article>
   );
 }
+
+export default memo(TutorCard);

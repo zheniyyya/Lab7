@@ -1,0 +1,28 @@
+
+ RUN  v3.2.7 C:/Projects/Lab7/Lab-7.-Performance-audit
+
+ ❯ src/__tests__/recommendedSort.test.jsx (2 tests | 1 failed) 7651ms
+   × бал кожного репетитора рахується не більше одного разу 7439ms
+     → expected 154208 to be less than or equal to 2000
+   ✓ порядок "Рекомендованих" той самий, що й за справжнім балом 211ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/__tests__/recommendedSort.test.jsx > бал кожного репетитора рахується не більше одного разу
+AssertionError: expected 154208 to be less than or equal to 2000
+ ❯ src/__tests__/recommendedSort.test.jsx:29:40
+     27|   fireEvent.change(sort, { target: { value: 'recommended' } });
+     28| 
+     29|   expect(tutorScore.mock.calls.length).toBeLessThanOrEqual(tutors.leng…
+       |                                        ^
+     30| }, 120000);
+     31| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  01:00:00
+   Duration  10.39s (transform 153ms, setup 381ms, collect 321ms, tests 7.65s, environment 1.33s, prepare 165ms)
+

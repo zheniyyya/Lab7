@@ -1,0 +1,12 @@
+
+ RUN  v3.2.7 C:/Projects/Lab7/Lab-7.-Performance-audit
+
+ ✓ src/__tests__/SearchBar.test.jsx (1 test) 41ms
+ ✓ src/__tests__/recommendedSort.test.jsx (2 tests) 5220ms
+   ✓ бал кожного репетитора рахується не більше одного разу  5198ms
+
+ Test Files  2 passed (2)
+      Tests  3 passed (3)
+   Start at  01:00:43
+   Duration  7.83s (transform 178ms, setup 769ms, collect 392ms, tests 5.26s, environment 2.47s, prepare 472ms)
+
